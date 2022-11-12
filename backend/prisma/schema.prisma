@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String
+  email     String     @unique
+  cpf       String     @unique
+  password  String
+  birthDate String
+  phone     String
+  gender    EGender
+  isActive  Boolean    @default(true)
+  role      ERole      @default(user)
+  bloodType EBloodType
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  institutionId String?
+  institution   Institution? @relation(fields: [institutionId], references: [id])
+
+  addressId String
+  address   Address @relation(fields: [addressId], references: [id])
+
+  Donations         Donations[]
+  UserAchivements   UserAchivements? @relation(fields: [userAchivementsId], references: [id])
+  userAchivementsId String?
+
+  userNotificationsId String?
+  userNotifications   UserNotifications? @relation(fields: [userNotificationsId], references: [id])
+}
+
+model Institution {
+  id        String   @id @default(uuid())
+  name      String
+  cnpj      String   @unique
+  email     String   @unique
+  photo     String
+  latitude  String
+  longitude String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  addressId String
+  address   Address @relation(fields: [addressId], references: [id])
+  User      User[]
+}
+
+enum ERole {
+  user
+  admin
+}
+
+enum EGender {
+  masculino
+  feminino
+}
+
+enum EBloodType {
+  APositivo
+  BPositivo
+  ABPositivo
+  OPositivo
+  ANegativo
+  BNegativo
+  ABNegativo
+  ONegativo
+}
+
+model Address {
+  id         String   @id @default(uuid())
+  logradouro String
+  street     String
+  cep        String
+  complement String?
+  district   String
+  city       String
+  uf         String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  Institution Institution[]
+  User        User[]
+}
+
+model UserNotifications {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Notifications Notifications[]
+  User          User[]
+}
+
+model Notifications {
+  id          String   @id @default(uuid())
+  type        String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userNotificationsId String?
+  userNotifications   UserNotifications? @relation(fields: [userNotificationsId], references: [id])
+}
+
+model Donations {
+  id        String   @id @default(uuid())
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model Achivements {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  icon        String
+  slug        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userAchivementsId String?
+  userAchivements   UserAchivements? @relation(fields: [userAchivementsId], references: [id])
+}
+
+model UserAchivements {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId       String
+  achivementId String
+  Achivements  Achivements[]
+  Users        User[]
+}
